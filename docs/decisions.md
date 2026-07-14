@@ -55,7 +55,19 @@ is Tuesday" — not "this town has surfing."
 One honest signal comes free: if the marine API has no data for the coordinates,
 surfing returns null ("not applicable") instead of a made-up number.
 
-## 6. Indoor sightseeing is relative
+## 6. Daily aggregates, not hourly data
+
+Ranking whole days only needs daily summaries, and Open-Meteo computes
+min/max/mean aggregates server-side (`temperature_2m_max`, `snowfall_sum`,
+`cloud_cover_mean`, ...). Pulling hourly would 24x the stored data to recompute
+numbers the API already provides. If the product later wants "best time of
+day", that's the point to switch.
+
+Probed the live API before committing to the shape: inland places (Innsbruck)
+get `null` from the marine API, coastal ones (Lisbon) get wave heights — which
+confirms the "null waves ⇒ surfing not applicable" plan in #5.
+
+## 7. Indoor sightseeing is relative
 
 Rain doesn't ruin a museum. Indoor gets a solid baseline that rises as outdoor
 conditions get worse — it's the fallback recommendation, and the scoring encodes
