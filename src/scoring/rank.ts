@@ -20,17 +20,17 @@ export function rankWeek(days: DayWeather[]): ActivityRanking[] {
   const indoor = days.map((d, i) => scoreIndoorDay(d, outdoor[i]?.score ?? 50))
 
   return [
-    { activity: 'SKIING', days: rank(days.map(scoreSkiDay)) },
-    { activity: 'SURFING', days: rank(days.map(scoreSurfDay)) },
-    { activity: 'OUTDOOR_SIGHTSEEING', days: rank(outdoor) },
-    { activity: 'INDOOR_SIGHTSEEING', days: rank(indoor) },
+    { activity: 'SKIING', days: rankDays(days.map(scoreSkiDay)) },
+    { activity: 'SURFING', days: rankDays(days.map(scoreSurfDay)) },
+    { activity: 'OUTDOOR_SIGHTSEEING', days: rankDays(outdoor) },
+    { activity: 'INDOOR_SIGHTSEEING', days: rankDays(indoor) },
   ]
 }
 
 // Rank 1 = best day of the week for that activity. Days without a score
 // (surfing inland) stay unranked. Order of the returned array is unchanged -
 // it's still chronological.
-function rank(scored: DayScore[]): RankedDay[] {
+export function rankDays(scored: DayScore[]): RankedDay[] {
   const order = scored
     .filter((s) => s.score != null)
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))

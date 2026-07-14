@@ -30,6 +30,13 @@ const SCHEMA = `
     fetched_at      TEXT NOT NULL,
     PRIMARY KEY (place_id, date)
   );
+
+  CREATE TABLE IF NOT EXISTS llm_scores (
+    place_id   INTEGER NOT NULL REFERENCES places(id),
+    fetched_at TEXT NOT NULL,
+    payload    TEXT NOT NULL,
+    PRIMARY KEY (place_id, fetched_at)
+  );
 `
 
 export function openDb(path = process.env.DB_PATH ?? 'data/forecasts.db'): Db {

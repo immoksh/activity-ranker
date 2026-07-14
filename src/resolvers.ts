@@ -1,7 +1,7 @@
 import { GraphQLError } from 'graphql'
 import { forecastFor } from './forecast.js'
 import { UpstreamError } from './openmeteo.js'
-import { rankWeek } from './scoring/rank.js'
+import { scoreWeek } from './score.js'
 
 export const resolvers = {
   Query: {
@@ -24,11 +24,13 @@ export const resolvers = {
         })
       }
 
+      const { activities, scoredBy } = await scoreWeek(week)
       return {
         place: week.place,
         fetchedAt: week.fetchedAt,
         servedFrom: week.servedFrom === 'store' ? 'STORE' : 'API',
-        activities: rankWeek(week.days),
+        scoredBy,
+        activities,
       }
     },
   },

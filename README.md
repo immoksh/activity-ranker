@@ -17,8 +17,17 @@ npm test         # scoring + freshness policy tests
 npm run typecheck
 ```
 
-Node 20+. No API keys — Open-Meteo's free tier is keyless. The SQLite file
-lands in `data/` on first use.
+Node 20+. Runs without any keys — Open-Meteo is keyless and scoring falls
+back to the deterministic engine. The SQLite file lands in `data/` on first
+use.
+
+To let an LLM decide the scores instead, put an OpenAI key in `.env`
+(gitignored):
+
+```
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-5-mini   # optional, this is the default
+```
 
 ## Example
 
@@ -27,6 +36,7 @@ query {
   outlook(city: "Innsbruck") {
     place { name country timezone }
     servedFrom          # STORE or API - shows whether the cache answered
+    scoredBy            # LLM or BANDS - which engine decided the scores
     activities {
       activity
       days { date score rank drivers }
@@ -48,9 +58,15 @@ score means not applicable — surfing with no coast in reach.
   than 6 hours **or** its first day is no longer "today" in the place's own
   timezone; then it's refetched lazily on the next request. No background
   jobs. Concurrent requests for one city share a single upstream fetch.
-- Scoring is a weighted sum of trapezoid "band" scores over the daily
-  variables (ideal range → 1, useless beyond the floors → 0). Weights sit in
-  one object per activity so they're easy to argue with.
+- Two scoring engines. With `OPENAI_API_KEY` set, an LLM decides the scores:
+  the week's weather goes to the model, strict structured output comes back,
+  gets validated (every activity, every date, scores clamped), ranked
+  server-side, and **cached in SQLite against the forecast snapshot** — the
+  model runs once per city per refresh, not per request. Without a key, or
+  whenever the model call or its output validation fails, deterministic
+  weighted "band" scoring answers instead (trapezoid bands per variable,
+  weights in one object per activity). `scoredBy` in the response tells you
+  which engine produced the numbers.
 
 ## Assumptions (where I'd have asked a PM)
 
@@ -67,7 +83,12 @@ score means not applicable — surfing with no coast in reach.
 - **Skiing without fresh snow still scores "fair" on cold, calm days** —
   pistes hold groomed snow; fresh snowfall is simply the strongest signal
   available without base-depth data.
-- **Surfing ignores rain** (you're wet anyway); waves 60%, wind 25%.
+- **Surfing ignores rain** (you're wet anyway); waves 60%, wind 25% — in the
+  band engine; the LLM gets the same guidance in its prompt.
+- **The LLM is the score decider when available, but never the rank decider
+  and never trusted blindly**: its output is validated field-by-field and any
+  failure silently falls back to the band engine, so the service can't be
+  taken down by a bad generation.
 
 ## Cut, and why
 

@@ -10,6 +10,15 @@ enum Source {
   API
 }
 
+"""
+Which engine decided the scores: an LLM (when OPENAI_API_KEY is set and the
+call succeeded) or the deterministic weighted-band fallback.
+"""
+enum Scorer {
+  LLM
+  BANDS
+}
+
 type Place {
   name: String!
   country: String!
@@ -39,6 +48,7 @@ type Outlook {
   place: Place!
   fetchedAt: String!
   servedFrom: Source!
+  scoredBy: Scorer!
   activities: [ActivityRanking!]!
 }
 
