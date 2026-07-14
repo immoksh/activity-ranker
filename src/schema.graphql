@@ -1,0 +1,47 @@
+enum Activity {
+  SKIING
+  SURFING
+  OUTDOOR_SIGHTSEEING
+  INDOOR_SIGHTSEEING
+}
+
+enum Source {
+  STORE
+  API
+}
+
+type Place {
+  name: String!
+  country: String!
+  lat: Float!
+  lon: Float!
+  timezone: String!
+}
+
+"""
+A day's suitability for one activity. score is 0-100; null means the
+activity does not apply here (e.g. surfing with no coast in reach).
+rank is 1 = best day of the week for this activity.
+"""
+type DayScore {
+  date: String!
+  score: Int
+  rank: Int
+  drivers: [String!]!
+}
+
+type ActivityRanking {
+  activity: Activity!
+  days: [DayScore!]!
+}
+
+type Outlook {
+  place: Place!
+  fetchedAt: String!
+  servedFrom: Source!
+  activities: [ActivityRanking!]!
+}
+
+type Query {
+  outlook(city: String!): Outlook!
+}
