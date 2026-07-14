@@ -6,6 +6,12 @@ export interface Place {
   timezone: string
 }
 
+export interface DayScore {
+  date: string
+  score: number | null
+  drivers: string[]
+}
+
 export interface DayWeather {
   date: string
   tempMax: number
